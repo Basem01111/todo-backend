@@ -6,10 +6,6 @@ const usersSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
-    // slug: {
-    //     type: String,
-    //     lowercase: true
-    // },
     email: {
         type: String,
         lowercase: true,
@@ -26,11 +22,11 @@ const usersSchema = new mongoose.Schema({
         required: true,
         minlength: 6
     },
-    // role: {
-    //     type: String,
-    //     enum: ['user', 'admin'],
-    //     default: 'user'
-    // },
+    role: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Roles', 
+        required: true,
+    },
 },
 {timestamps: true} // Automatically adds createdAt and updatedAt fields
 );

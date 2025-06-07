@@ -3,6 +3,8 @@ const usersModel = require("../../shared/models/users.model");
 const { isUnique } = require("../../utils/db");
 const bcrypt = require("bcrypt");
 var jwt = require("jsonwebtoken");
+const { genrateAccessToken, genrateRefreshToken } = require("../../utils/token");
+const rolesModel = require("../admin/roles/roles.model");
 
 require("dotenv").config();
 
@@ -30,6 +32,10 @@ exports.register = async (req, res, next) => {
 
     // Hash password
     req.body.password = await bcrypt.hash(password, 10);
+
+    // Add Role
+    const role = await rolesModel.findOne({name:'user'});
+    req.body.role = role._id;
 
     // Create new user
     const user = new usersModel(req.body);
@@ -60,27 +66,10 @@ exports.login = async (req, res, next) => {
       });
 
     // Create JWT access token
-    const accessToken = jwt.sign(
-      {
-        UserInfo: {
-          id: user._id,
-        },
-      },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "10m" }
-    );
+    const accessToken = genrateAccessToken(user);
 
     // Create JWT Refresh token
-
-    const refreshToken = jwt.sign(
-      {
-        UserInfo: {
-          id: user._id,
-        },
-      },
-      process.env.REFRESH_TOKEN_SECRET,
-      { expiresIn: remember ? "60d" : "1d" }
-    );
+    const refreshToken = genrateRefreshToken(user, remember);
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
@@ -124,14 +113,10 @@ exports.refreshToken = async (req, res, next) => {
     const refreshToken = cookies.refreshToken;
 
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-    const user = await usersModel.findById(decoded.UserInfo.id);
+    const user = await usersModel.findById(decoded.userInfo.id);
     if (!user) return apiResponse(res, 401, "Unauthorized");
 
-    const accessToken = jwt.sign(
-      { UserInfo: { id: user._id } },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "10m" }
-    );
+    const accessToken = genrateAccessToken(user);
 
     return res.json({ user, accessToken });
   } catch (err) {

@@ -2,11 +2,15 @@ var express = require("express");
 var app = express();
 var createError = require("http-errors");
 var logger = require("morgan");
-var indexRouter = require("./routes/index");
 const connectDB = require("../config/db");
 const cors = require("cors");
 const apiResponse = require("./utils/apiResponse");
 var cookieParser = require('cookie-parser')
+
+// Routers
+var authRouter = require("./routes/auth");
+var frontRouter = require("./routes/front");
+var adminRouter = require("./routes/admin");
 
 // Use Logger
 app.use(logger("dev"));
@@ -29,7 +33,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // Routes
-app.use("/api", indexRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/admin", adminRouter);
+app.use("/api", frontRouter);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {

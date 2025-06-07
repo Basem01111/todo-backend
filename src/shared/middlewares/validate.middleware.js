@@ -1,6 +1,6 @@
 const apiResponse = require("../../utils/apiResponse");
 
-const validate = (schema) => (req, res, next) => {
+const validateMiddleware = (schema) => (req, res, next) => {
   const result = schema.safeParse(req.body);
   if (!result.success) {
     return apiResponse(
@@ -14,4 +14,4 @@ const validate = (schema) => (req, res, next) => {
   next();
 };
 
-module.exports = validate;
+module.exports = validateMiddleware;

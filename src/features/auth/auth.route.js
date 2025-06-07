@@ -6,11 +6,11 @@ const {
   createUsersValidate,
   loginValidate,
 } = require("../../shared/validates/users.validate.js");
-const validate = require("../../shared/middlewares/validate.js");
+const validateMiddleware = require("../../shared/middlewares/validate.middleware.js");
 
 router
-  .post("/register", validate(createUsersValidate), register)
-  .post("/login", validate(loginValidate), login)
+  .post("/register", validateMiddleware(createUsersValidate), register)
+  .post("/login", validateMiddleware(loginValidate), login)
   .post("/logout", logout)
   .get("/refresh_token", refreshToken);
 

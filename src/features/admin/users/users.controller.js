@@ -1,12 +1,23 @@
-const apiResponse = require("../../utils/apiResponse");
-const usersModel = require("../../shared/models/users.model");
-const { isUnique } = require("../../utils/db");
+const apiResponse = require("../../../utils/apiResponse");
+const usersModel = require("../../../shared/models/users.model");
+const { isUnique } = require("../../../utils/db");
 bcrypt = require("bcrypt");
 
 // Get All
 exports.getusers = async (req, res, next) => {
   try {
-    users = await usersModel.find({}).sort({ createdAt: -1 });
+    //     users = await usersModel.aggregate([{
+    //   $lookup:{
+    //     from: "tasks",
+    //     localField: "_id",
+    //     foreignField: "userId",
+    //     as: "tasks"
+    //   }
+    // }]).sort({ createdAt: -1 });
+    const users = await usersModel.find({}).sort({ createdAt: -1 });
+    
+    if(!users.length) return apiResponse(res, 404, "لا يوجد مستخدمين");
+    
     apiResponse(res, 200, "تم جلب المستخدمين", users);
   } catch (error) {
     apiResponse(res, 500, error.message);

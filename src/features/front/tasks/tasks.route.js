@@ -1,13 +1,13 @@
 var express = require("express");
 var router = express.Router();
-const validate = require("../../shared/middlewares/validate.js");
+const validateMiddleware = require("../../../shared/middlewares/validate.middleware.js");
 
 const {
   getTasks,
   addTasks,
   updateTasks,
   deleteTasks,
-} = require("./tasks.controller");
+} = require("./tasks.controller.js");
 const {
   createTasksValidate,
   updateTasksValidate,
@@ -15,8 +15,8 @@ const {
 
 router
   .get("/", getTasks)
-  .post("/add", validate(createTasksValidate), addTasks)
-  .put("/update/:id", validate(updateTasksValidate), updateTasks)
+  .post("/add", validateMiddleware(createTasksValidate), addTasks)
+  .put("/update/:id", validateMiddleware(updateTasksValidate), updateTasks)
   .delete("/delete/:id", deleteTasks);
 
 // Export the router
