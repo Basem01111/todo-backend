@@ -1,46 +1,41 @@
 const apiResponse = require("../../utils/apiResponse");
 const usersModel = require("../../shared/models/users.model");
-const { isUnique } = require("../../utils/db");
 const bcrypt = require("bcrypt");
 var jwt = require("jsonwebtoken");
 const { genrateAccessToken, genrateRefreshToken } = require("../../utils/token");
 const rolesModel = require("../admin/roles/roles.model");
+const { moveFile, getPathFile } = require("../../utils/files");
 
 require("dotenv").config();
 
 exports.register = async (req, res, next) => {
   try {
     const { email, phone, password } = req.body;
-
-    // Check Email
-    if (!(await isUnique(usersModel, "email", email))) {
-      return apiResponse(
-        res,
-        400,
-        "البريد الالكتروني مستخدم بالفعل من قبل مستخدم آخر"
-      );
-    }
-
-    // Check Phone
-    if (!(await isUnique(usersModel, "phone", phone))) {
-      return apiResponse(
-        res,
-        400,
-        "رقم الهاتف مستخدم بالفعل من قبل مستخدم آخر"
-      );
-    }
-
     // Hash password
     req.body.password = await bcrypt.hash(password, 10);
-
+    
     // Add Role
     const role = await rolesModel.findOne({name:'user'});
-    req.body.role = role._id;
-
+    if(role) {
+      req.body.role = role._id;
+    } else {
+      return apiResponse(res, 404, "الصلاحيات المطلوبة غير مسجلة في قاعدة البيانات");
+    }
+    
+    // Set Path Avatar
+    if(req.file) {
+      req.body.avatar = getPathFile(req.file.filename, "users");
+    }
+    
     // Create new user
     const user = new usersModel(req.body);
     await user.save();
-
+    
+    // Move Avatar From Temp
+    if(req.file) {
+      await moveFile(req.file.filename, "users");
+    }
+    
     return apiResponse(res, 200, "تم التسجيل");
   } catch (error) {
     apiResponse(res, 500, error.message);

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { getPathFile } = require('../../utils/files');
 
 const usersSchema = new mongoose.Schema({
     name:{
@@ -16,7 +17,10 @@ const usersSchema = new mongoose.Schema({
         type: String,
         unique: true,
     },
-    // profileImage: String,
+    avatar: {
+        type: String,
+        default: getPathFile('avatar.webp','users'),
+    },
     password: {
         type: String,
         required: true,

@@ -1,5 +1,6 @@
 var express = require("express");
 var app = express();
+const path = require("path");
 var createError = require("http-errors");
 var logger = require("morgan");
 const connectDB = require("../config/db");
@@ -11,6 +12,10 @@ var cookieParser = require('cookie-parser')
 var authRouter = require("./routes/auth");
 var frontRouter = require("./routes/front");
 var adminRouter = require("./routes/admin");
+
+
+// Jobs
+require("./jobs/deleteTempFiles.job")();
 
 // Use Logger
 app.use(logger("dev"));
@@ -31,6 +36,9 @@ app.use(cookieParser())
 // Json Data
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Folder Files
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 // Routes
 app.use("/api/auth", authRouter);

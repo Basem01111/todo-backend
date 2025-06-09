@@ -28,9 +28,7 @@ exports.authMiddlewareAdmin = (req, res, next) => {
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, decoded) => {
         if (err) return apiResponse(res, 403, "Forbidden");
         const user = await usersModel.findById(decoded.userInfo.id).select('_id role').populate('role');
-        console.log(user)
-        // console.log(user.role.name !== 'admin')
-        if (!user || user.role.name !== 'admin') return apiResponse(res, 401, "Unauthorized");
+        if (!user || user?.role?.name !== 'admin') return apiResponse(res, 401, "Unauthorized");
         req.userId = user._id;
         next()
     })

@@ -1,6 +1,6 @@
 const apiResponse = require("../../../utils/apiResponse");
 const usersModel = require("../../../shared/models/users.model");
-const { isUnique } = require("../../../utils/db");
+const { getPathFile, moveFile } = require("../../../utils/files");
 bcrypt = require("bcrypt");
 
 // Get All
@@ -15,9 +15,9 @@ exports.getusers = async (req, res, next) => {
     //   }
     // }]).sort({ createdAt: -1 });
     const users = await usersModel.find({}).sort({ createdAt: -1 });
-    
-    if(!users.length) return apiResponse(res, 404, "لا يوجد مستخدمين");
-    
+
+    if (!users.length) return apiResponse(res, 404, "لا يوجد مستخدمين");
+
     apiResponse(res, 200, "تم جلب المستخدمين", users);
   } catch (error) {
     apiResponse(res, 500, error.message);
@@ -29,30 +29,23 @@ exports.addusers = async (req, res, next) => {
   try {
     const { email, phone, password } = req.body;
 
-    // Check Email
-    if (!(await isUnique(usersModel, "email", email))) {
-      return apiResponse(
-        res,
-        400,
-        "البريد الالكتروني مستخدم بالفعل من قبل مستخدم آخر"
-      );
-    }
-
-    // Check Phone
-    if (!(await isUnique(usersModel, "phone", phone))) {
-      return apiResponse(
-        res,
-        400,
-        "رقم الهاتف مستخدم بالفعل من قبل مستخدم آخر"
-      );
-    }
-
     // Hash password
     req.body.password = await bcrypt.hash(password, 10);
+
+    // Set Path Avatar
+    if (req.file) {
+      req.body.avatar = getPathFile(req.file.filename, "users");
+    }
 
     // Create new user
     const user = new usersModel(req.body);
     await user.save();
+
+    // Move Avatar From Temp
+    if (req.file) {
+      await moveFile(req.file.filename, "users");
+    }
+
     return apiResponse(res, 200, "تم الاضافة", user);
   } catch (error) {
     apiResponse(res, 500, error.message);
@@ -65,37 +58,31 @@ exports.updateusers = async (req, res, next) => {
     const { id } = req.params;
     const { email, phone, password } = req.body;
 
-    // Check Email
-    if (!(await isUnique(usersModel, "email", email, id))) {
-      return apiResponse(
-        res,
-        400,
-        "البريد الالكتروني مستخدم بالفعل من قبل مستخدم آخر"
-      );
-    }
-
-    // Check Phone
-    if (!(await isUnique(usersModel, "phone", phone, id))) {
-      return apiResponse(
-        res,
-        400,
-        "رقم الهاتف مستخدم بالفعل من قبل مستخدم آخر"
-      );
-    }
-
     // Hash password
-    if(password) {
+    if (password) {
       req.body.password = await bcrypt.hash(password, 10);
     }
-    
+
+    // Set Path Avatar
+    if (req.file) {
+      req.body.avatar = getPathFile(req.file.filename, "users");
+    }
+    console.log(req.file)
+
     //  Update user
-    const user = await usersModel.findByIdAndUpdate(
-      id,
-      req.body,
-      {
-        new: true,
-      }
-    );
+    const user = await usersModel.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
+
+    if (!user) {
+      return apiResponse(res, 404, "المستخدم غير موجود");
+    }
+
+    // Move Avatar From Temp
+    if (req.file) {
+      await moveFile(req.file.filename, "users");
+    }
+
     return apiResponse(res, 200, "تم التحديث", user);
   } catch (error) {
     apiResponse(res, 500, error.message);

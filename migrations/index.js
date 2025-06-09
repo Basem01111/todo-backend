@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const connectDB = require("../config/db");
 
 // Migrations Files
-const migrateRules = require("./migrateRules"); 
+const migrateRoles = require("./migrateRoles"); 
 const migrateAdmins = require("./migrateAdmins"); 
 
 (async () => {
@@ -12,7 +12,7 @@ const migrateAdmins = require("./migrateAdmins");
     await connectDB();    
 
     // Satrt Migrations
-    await migrateRules()
+    await migrateRoles()
     await migrateAdmins()
   } catch (err) {
     console.error("Migration failed:", err);

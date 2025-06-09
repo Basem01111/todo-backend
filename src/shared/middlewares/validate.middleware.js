@@ -1,17 +1,47 @@
 const apiResponse = require("../../utils/apiResponse");
 
-const validateMiddleware = (schema) => (req, res, next) => {
-  const result = schema.safeParse(req.body);
-  if (!result.success) {
-    return apiResponse(
-      res,
-      400,
-      "خطاء في البيانات المدخلة",
-      result.error.flatten().fieldErrors
-    );
+const mergeFieldErrors = (errorsA = {}, errorsB = {}) => {
+  const merged = { ...errorsA };
+  for (const key in errorsB) {
+    if (merged[key]) {
+      merged[key] = [...merged[key], ...errorsB[key]];
+    } else {
+      merged[key] = errorsB[key];
+    }
   }
-  req.body = result.data;
-  next();
+  return merged;
+};
+
+const validateMiddleware = (schemaFactory) => async (req, res, next) => {
+  try {
+    const userIdFromReq = req.params.id || null;
+    
+    const schema = schemaFactory(userIdFromReq);
+
+    const data = await schema.parseAsync(req.body);
+
+    const otherErrors = req.validateErrors || {};
+
+    if (Object.keys(otherErrors).length > 0) {
+      return apiResponse(res, 400, "خطأ في البيانات المدخلة", otherErrors);
+    }
+
+    req.body = data;
+
+    next();
+  } catch (error) {
+    if (error.name === "ZodError") {
+      const zodErrors = error.flatten().fieldErrors;
+
+      const otherErrors = req.validateErrors || {};
+
+      const mergedErrors = mergeFieldErrors(otherErrors, zodErrors);
+
+      return apiResponse(res, 400, "خطأ في البيانات المدخلة", mergedErrors);
+    }
+
+    return apiResponse(res, 500, "خطأ في الخادم", error.message || error);
+  }
 };
 
 module.exports = validateMiddleware;
