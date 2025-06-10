@@ -20,6 +20,9 @@ const tasksSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    files: {
+        type: [String]
+    }
 });
 
 module.exports = mongoose.model('Tasks', tasksSchema); // 'tasks' is the collection name

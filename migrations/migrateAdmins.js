@@ -12,7 +12,6 @@ async function migration() {
                 name: "admin",
                 email: "admin@admin.com",
                 phone: "11111111",
-                // profileImage: String,
                 password: password,
                 role: role._id,
         }

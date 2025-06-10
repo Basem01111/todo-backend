@@ -1,6 +1,7 @@
 var express = require("express");
 var router = express.Router();
 const validateMiddleware = require("../../../shared/middlewares/validate.middleware.js");
+const createUploader = require("../../../shared/middlewares/upload.middleware.js");
 
 const {
   getTasks,
@@ -13,10 +14,21 @@ const {
   updateTasksValidate,
 } = require("./tasks.validate.js");
 
+require("dotenv").config();
+
+
+// Upload Avatar
+const uploadAvatar = createUploader({
+  types: process.env.ACCEPTED_FILE_TYPES.slice(','),
+  maxSize: process.env.MAX_FILE_SIZE,
+  fieldName: 'files',
+  maxCount: 4,
+});
+
 router
   .get("/", getTasks)
-  .post("/add", validateMiddleware(createTasksValidate), addTasks)
-  .put("/update/:id", validateMiddleware(updateTasksValidate), updateTasks)
+  .post("/add", uploadAvatar, validateMiddleware(createTasksValidate), addTasks)
+  .put("/update/:id", uploadAvatar, validateMiddleware(updateTasksValidate), updateTasks)
   .delete("/delete/:id", deleteTasks);
 
 // Export the router

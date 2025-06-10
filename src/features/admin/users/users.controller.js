@@ -58,6 +58,12 @@ exports.updateusers = async (req, res, next) => {
     const { id } = req.params;
     const { email, phone, password } = req.body;
 
+    // Get User
+    const existingUser = await usersModel.findById(id);
+    if (!existingUser) {
+      return apiResponse(res, 404, "المستخدم غير موجود");
+    }
+
     // Hash password
     if (password) {
       req.body.password = await bcrypt.hash(password, 10);
@@ -67,7 +73,6 @@ exports.updateusers = async (req, res, next) => {
     if (req.file) {
       req.body.avatar = getPathFile(req.file.filename, "users");
     }
-    console.log(req.file)
 
     //  Update user
     const user = await usersModel.findByIdAndUpdate(id, req.body, {
@@ -80,7 +85,7 @@ exports.updateusers = async (req, res, next) => {
 
     // Move Avatar From Temp
     if (req.file) {
-      await moveFile(req.file.filename, "users");
+      await moveFile(req.file.filename, "users", existingUser.avatar);
     }
 
     return apiResponse(res, 200, "تم التحديث", user);

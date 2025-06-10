@@ -9,6 +9,7 @@ exports.createTasksValidate = ()=> z.object({
     
   description: z.string().trim().max(1000, "المهمة يجب أن تكون أقل من 1000 حرف").optional(),
   completed: z.boolean().optional(),
+  files: z.array(z.string()).optional(),
 });
 
 // Update
@@ -16,4 +17,5 @@ exports.updateTasksValidate = ()=> z.object({
   title: z.string().trim().max(100, "العنوان يجب أن يكون أقل من 100 حرف").optional(),
   description: z.string().trim().max(1000, "المهمة يجب أن تكون أقل من 1000 حرف").optional(),
   completed: z.boolean().optional(),
+  files: z.array(z.string()).optional(),
 });

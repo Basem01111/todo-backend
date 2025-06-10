@@ -1,6 +1,7 @@
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const crypto = require("crypto");
 
 function createUploader({
   types,
@@ -10,7 +11,7 @@ function createUploader({
   required = false,
   requiredMsg = "هذا الحقل مطلوب",
 }) {
-const uploadPath = path.join(process.cwd(), "uploads", "temp");
+  const uploadPath = path.join(process.cwd(), "uploads", "temp");
   if (!fs.existsSync(uploadPath)) {
     fs.mkdirSync(uploadPath, { recursive: true });
   }
@@ -20,7 +21,12 @@ const uploadPath = path.join(process.cwd(), "uploads", "temp");
       cb(null, uploadPath);
     },
     filename: (req, file, cb) => {
-      cb(null, Date.now() + "-" + file.originalname);
+      const timestamp = Date.now();
+      const randomId = crypto.randomUUID();
+      const ext = path.extname(file.originalname);
+
+      const filename = `${timestamp}_${randomId}${ext}`;
+      cb(null, filename);
     },
   });
 
@@ -49,6 +55,14 @@ const uploadPath = path.join(process.cwd(), "uploads", "temp");
         if (!req.validateErrors[fieldName]) req.validateErrors[fieldName] = [];
         req.validateErrors[fieldName].push(
           `الحجم لا يمكن أن يكون أكبر من ${maxSize} ميجابايت`
+        );
+      } 
+      
+      // Error Count
+      else if (err.code === "LIMIT_UNEXPECTED_FILE") {
+        if (!req.validateErrors[fieldName]) req.validateErrors[fieldName] = [];
+        req.validateErrors[fieldName].push(
+          `يسمح فقط برفع ${maxCount} ملف${maxCount > 1 ? "ات" : ""}`
         );
       }
 

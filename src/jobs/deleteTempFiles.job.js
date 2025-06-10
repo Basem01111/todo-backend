@@ -3,9 +3,10 @@ const fs = require("fs");
 const path = require("path");
 
 module.exports = () => {
-  cron.schedule("0 2 * * *", async () => {
+  cron.schedule("*/20 * * * *", async () => {
     try {
-      console.log("🚀 Running cron job to delete temp files");
+      console.log("🧹 Running cron job to clean old temp files...");
+
       const tempDir = path.join(process.cwd(), "uploads", "temp");
 
       if (!fs.existsSync(tempDir)) return;
@@ -13,21 +14,31 @@ module.exports = () => {
       const files = fs.readdirSync(tempDir);
 
       for (const file of files) {
-        const filePath = path.join(tempDir, file);
+        try {
+          const filePath = path.join(tempDir, file);
 
-        const stats = fs.statSync(filePath);
-        const lastModified = new Date(stats.mtime);
-        const now = new Date();
+          const timestampPart = file.split("_")[0];
+          const timestamp = Number(timestampPart);
 
-        const hoursDiff = (now - lastModified) / (1000 * 60 * 60);
+          if (isNaN(timestamp)) {
+            console.warn(`⛔ Error Name: ${file}`);
+            continue;
+          }
 
-        if (hoursDiff >= 24) {
-          fs.unlinkSync(filePath);
-          console.log(`🗑️ Deleted temp file: ${file}`);
+          const ageInMs = Date.now() - timestamp;
+          const ageInMinutes = ageInMs / (1000 * 60);
+
+          if (ageInMinutes > 20) {
+            fs.unlinkSync(filePath);
+            console.log(`🗑️ Deleted: ${file}`);
+          }
+        } catch (err) {
+          console.error(`❌ Error deleting file ${file}:`, err.message);
         }
       }
+
     } catch (err) {
-      console.error("❌ Error while deleting temp files:", err);
+      console.error("❌ Cron job error:", err.message);
     }
   });
 };

@@ -1,16 +1,20 @@
 const apiResponse = require("../../../utils/apiResponse");
+const { moveFile, getPathFile } = require("../../../utils/files");
+const paginate = require("../../../utils/paginate");
 const tasksModel = require("./tasks.model");
 
 // Get All
 exports.getTasks = async (req, res, next) => {
   try {
-    tasks = await tasksModel
-      .find({ userId: req.userId })
-      .sort({ createdAt: -1 });
+    const tasks = await paginate({
+      req,
+      model: tasksModel,
+      filter: { userId: req.userId },
+    });
 
-      if(!tasks.length) return apiResponse(res, 404, "لا يوجد مهمات");
-      
-    apiResponse(res, 200, "تم جلب المهمات", tasks);
+    if (!tasks.data.length) return apiResponse(res, 404, "لا يوجد مهمات");
+
+    apiResponse(res, 200, "تم جلب المهمات", tasks.data, tasks.pagination);
   } catch (error) {
     apiResponse(res, 500, error.message);
   }
@@ -19,9 +23,28 @@ exports.getTasks = async (req, res, next) => {
 // Add Task
 exports.addTasks = async (req, res, next) => {
   try {
+    // If files Add To Body
+    if (req.files) {
+      req.body.files = [];
+      req.files.forEach((item) => {
+        req.body.files.push(getPathFile(item.filename, "tasks"));
+      });
+    }
+
+    // Add User Id To Body
+    req.body.userId = req.userId;
+
+    // Save
     const task = new tasksModel(req.body);
-    task.userId = req.userId;
     await task.save();
+
+    // Move Files From Temp If Done Save
+    if (req.files) {
+      req.files.forEach(async(item)=> {
+        await moveFile(item.filename, "tasks");
+      })
+    }
+
     return apiResponse(res, 200, "تم الاضافة", task);
   } catch (error) {
     apiResponse(res, 500, error.message);
@@ -40,11 +63,7 @@ exports.updateTasks = async (req, res, next) => {
     );
 
     if (!task)
-      return apiResponse(
-        res,
-        404,
-        "التاسك غير موجود أو غير مصرح لك بتحديثه"
-      );
+      return apiResponse(res, 404, "التاسك غير موجود أو غير مصرح لك بتحديثه");
 
     return apiResponse(res, 200, "تم التحديث", task);
   } catch (error) {
@@ -63,11 +82,7 @@ exports.deleteTasks = async (req, res, next) => {
     });
 
     if (!task)
-      return apiResponse(
-        res,
-        404,
-        "التاسك غير موجود أو غير مصرح لك بحذفه"
-      );
+      return apiResponse(res, 404, "التاسك غير موجود أو غير مصرح لك بحذفه");
 
     return apiResponse(res, 200, "تم الحذف");
   } catch (error) {

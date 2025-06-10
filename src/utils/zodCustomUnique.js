@@ -10,7 +10,6 @@ const customUnique = (model, errorMsg, id) => {
   return async (value, ctx) => {
     const fieldName = ctx.path[0];
     if (value === undefined || value === null) return;
-    console.log({ [fieldName]: value })
     const query = { [fieldName]: value };
     if (id) {
       query._id = { $ne: id };
