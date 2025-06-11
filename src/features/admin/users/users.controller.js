@@ -1,6 +1,6 @@
 const apiResponse = require("../../../utils/apiResponse");
 const usersModel = require("../../../shared/models/users.model");
-const { getPathFile, moveFile } = require("../../../utils/files");
+const { deleteFiles } = require("../../../utils/files");
 bcrypt = require("bcrypt");
 
 // Get All
@@ -33,18 +33,13 @@ exports.addusers = async (req, res, next) => {
     req.body.password = await bcrypt.hash(password, 10);
 
     // Set Path Avatar
-    if (req.file) {
-      req.body.avatar = getPathFile(req.file.filename, "users");
+    if (req.filePaths) {
+      req.body.avatar = req.filePaths;
     }
 
     // Create new user
     const user = new usersModel(req.body);
     await user.save();
-
-    // Move Avatar From Temp
-    if (req.file) {
-      await moveFile(req.file.filename, "users");
-    }
 
     return apiResponse(res, 200, "تم الاضافة", user);
   } catch (error) {
@@ -70,8 +65,8 @@ exports.updateusers = async (req, res, next) => {
     }
 
     // Set Path Avatar
-    if (req.file) {
-      req.body.avatar = getPathFile(req.file.filename, "users");
+    if (req.filePaths) {
+      req.body.avatar = req.filePaths;
     }
 
     //  Update user
@@ -83,9 +78,9 @@ exports.updateusers = async (req, res, next) => {
       return apiResponse(res, 404, "المستخدم غير موجود");
     }
 
-    // Move Avatar From Temp
-    if (req.file) {
-      await moveFile(req.file.filename, "users", existingUser.avatar);
+    // Remove Old Avatar
+    if (req.filePaths && existingUser.avatar) {
+      await deleteFiles(existingUser.avatar);
     }
 
     return apiResponse(res, 200, "تم التحديث", user);

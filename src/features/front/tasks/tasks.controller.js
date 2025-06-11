@@ -1,5 +1,4 @@
 const apiResponse = require("../../../utils/apiResponse");
-const { moveFile, getPathFile } = require("../../../utils/files");
 const paginate = require("../../../utils/paginate");
 const tasksModel = require("./tasks.model");
 
@@ -24,11 +23,8 @@ exports.getTasks = async (req, res, next) => {
 exports.addTasks = async (req, res, next) => {
   try {
     // If files Add To Body
-    if (req.files) {
-      req.body.files = [];
-      req.files.forEach((item) => {
-        req.body.files.push(getPathFile(item.filename, "tasks"));
-      });
+    if (req.filePaths) {
+      req.body.files = req.filePaths;
     }
 
     // Add User Id To Body
@@ -37,13 +33,6 @@ exports.addTasks = async (req, res, next) => {
     // Save
     const task = new tasksModel(req.body);
     await task.save();
-
-    // Move Files From Temp If Done Save
-    if (req.files) {
-      req.files.forEach(async(item)=> {
-        await moveFile(item.filename, "tasks");
-      })
-    }
 
     return apiResponse(res, 200, "تم الاضافة", task);
   } catch (error) {
@@ -55,6 +44,11 @@ exports.addTasks = async (req, res, next) => {
 exports.updateTasks = async (req, res, next) => {
   try {
     const { id } = req.params;
+
+    // Set Path File
+    if (req.filePaths) {
+      req.body.files = req.filePaths;
+    }
 
     const task = await tasksModel.findOneAndUpdate(
       { _id: id, userId: req.userId },

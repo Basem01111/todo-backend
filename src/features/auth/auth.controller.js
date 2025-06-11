@@ -4,7 +4,6 @@ const bcrypt = require("bcrypt");
 var jwt = require("jsonwebtoken");
 const { genrateAccessToken, genrateRefreshToken } = require("../../utils/token");
 const rolesModel = require("../admin/roles/roles.model");
-const { moveFile, getPathFile } = require("../../utils/files");
 
 require("dotenv").config();
 
@@ -23,18 +22,13 @@ exports.register = async (req, res, next) => {
     }
     
     // Set Path Avatar
-    if(req.file) {
-      req.body.avatar = getPathFile(req.file.filename, "users");
+    if(req.filePaths) {
+      req.body.avatar = req.filePaths;
     }
     
     // Create new user
     const user = new usersModel(req.body);
     await user.save();
-    
-    // Move Avatar From Temp
-    if(req.file) {
-      await moveFile(req.file.filename, "users");
-    }
     
     return apiResponse(res, 200, "تم التسجيل");
   } catch (error) {

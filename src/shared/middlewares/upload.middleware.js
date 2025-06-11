@@ -4,6 +4,7 @@ const fs = require("fs");
 const crypto = require("crypto");
 
 function createUploader({
+  folder,
   types,
   maxSize,
   fieldName,
@@ -11,11 +12,15 @@ function createUploader({
   required = false,
   requiredMsg = "هذا الحقل مطلوب",
 }) {
-  const uploadPath = path.join(process.cwd(), "uploads", "temp");
+  const uploadPath = path.join(process.cwd(), "uploads", folder);
+  const projectUploadsPath = path.join("uploads", folder);
+
+  // Check And Create Folder
   if (!fs.existsSync(uploadPath)) {
     fs.mkdirSync(uploadPath, { recursive: true });
   }
 
+  // Save File
   const storage = multer.diskStorage({
     destination: (req, file, cb) => {
       cb(null, uploadPath);
@@ -30,6 +35,7 @@ function createUploader({
     },
   });
 
+  // Filter With Type
   const fileFilter = (req, file, cb) => {
     if (types.includes(file.mimetype)) {
       cb(null, true);
@@ -38,6 +44,7 @@ function createUploader({
     }
   };
 
+  // Init Multer
   const upload = multer({
     storage,
     limits: { fileSize: maxSize * 1024 * 1024 },
@@ -48,6 +55,7 @@ function createUploader({
     const handleError = (err) => {
       if (!err) return;
 
+      // Check And Create Validate Errors Req
       if (!req.validateErrors) req.validateErrors = {};
 
       // Error Size
@@ -56,8 +64,8 @@ function createUploader({
         req.validateErrors[fieldName].push(
           `الحجم لا يمكن أن يكون أكبر من ${maxSize} ميجابايت`
         );
-      } 
-      
+      }
+
       // Error Count
       else if (err.code === "LIMIT_UNEXPECTED_FILE") {
         if (!req.validateErrors[fieldName]) req.validateErrors[fieldName] = [];
@@ -80,13 +88,14 @@ function createUploader({
     };
 
     const afterUpload = (err) => {
+      // Handel Errors
       handleError(err);
 
+      // Set Required Error
       const hasFileError =
         req.validateErrors &&
         req.validateErrors[fieldName] &&
         req.validateErrors[fieldName].length > 0;
-
       if (required && !hasFileError) {
         const hasFile =
           maxCount > 1 ? req.files && req.files.length > 0 : req.file != null;
@@ -98,12 +107,31 @@ function createUploader({
         }
       }
 
+      // Add Path To Req
+      if (maxCount > 1) {
+        // Is Multi Files
+        if (req.files.length >= 1) {
+          req.filePaths = [];
+          req.files.forEach((file) => {
+            if (file?.filename) {
+              req.filePaths.push(path.join(projectUploadsPath, file.filename));
+            }
+          });
+        }
+      } else {
+        // Is Single File.
+        if (req.file && req.file?.filename) {
+          req.filePaths = path.join(projectUploadsPath, req.file.filename);
+        }
+      }
       next();
     };
 
     if (maxCount > 1) {
+      // Is Multi Files
       upload.array(fieldName, maxCount)(req, res, afterUpload);
     } else {
+      // Is Single File
       upload.single(fieldName)(req, res, afterUpload);
     }
   };

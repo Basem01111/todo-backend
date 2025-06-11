@@ -6,19 +6,20 @@ const validateMiddleware = require("../../shared/middlewares/validate.middleware
 const createUploader = require("../../shared/middlewares/upload.middleware.js");
 const { register, login, logout, refreshToken} = require("./auth.controller.js");
 const {
-  createUsersValidate,
+  registerValidate,
   loginValidate,
 } = require("../../shared/validates/users.validate.js");
 
 // Upload Avatar
 const uploadAvatar = createUploader({
+    folder: 'users',
   types: process.env.ACCEPTED_IMAGE_TYPES.slice(','),
   maxSize: process.env.MAX_IMAGE_SIZE,
   fieldName: 'avatar',
 });
 
 router
-  .post("/register", uploadAvatar, validateMiddleware(createUsersValidate), register)
+  .post("/register", uploadAvatar, validateMiddleware(registerValidate), register)
   .post("/login", validateMiddleware(loginValidate), login)
   .post("/logout", logout)
   .get("/refresh_token", refreshToken);

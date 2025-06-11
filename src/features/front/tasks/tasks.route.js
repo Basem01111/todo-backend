@@ -16,19 +16,24 @@ const {
 
 require("dotenv").config();
 
-
 // Upload Avatar
 const uploadAvatar = createUploader({
-  types: process.env.ACCEPTED_FILE_TYPES.slice(','),
+  folder: "tasks",
+  types: process.env.ACCEPTED_FILE_TYPES.slice(","),
   maxSize: process.env.MAX_FILE_SIZE,
-  fieldName: 'files',
+  fieldName: "files",
   maxCount: 4,
 });
 
 router
   .get("/", getTasks)
   .post("/add", uploadAvatar, validateMiddleware(createTasksValidate), addTasks)
-  .put("/update/:id", uploadAvatar, validateMiddleware(updateTasksValidate), updateTasks)
+  .put(
+    "/update/:id",
+    uploadAvatar,
+    validateMiddleware(updateTasksValidate),
+    updateTasks
+  )
   .delete("/delete/:id", deleteTasks);
 
 // Export the router

@@ -33,3 +33,21 @@ exports.moveFile = async (filename, newFolderPath, oldFile) => {
 exports.getPathFile =  (filename, folder) => {
       return path.join("uploads", folder, filename);
 }
+
+exports.deleteFiles = async (paths) => {
+  try {
+    if (typeof paths === "string") {
+      await fs.promises.unlink(paths);
+      console.log("🗑️ Done Deleted File:", paths);
+    } else {
+      await Promise.all(
+        paths.map(async (filePath) => {
+          await fs.promises.unlink(filePath);
+          console.log("🗑️ Done Deleted File:", filePath);
+        })
+      );
+    }
+  } catch (err) {
+    console.error("❌ Error deleting files:", err);
+  }
+};

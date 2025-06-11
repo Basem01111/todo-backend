@@ -40,7 +40,7 @@ const validateMiddleware = (schemaFactory) => async (req, res, next) => {
       return apiResponse(res, 400, "خطأ في البيانات المدخلة", mergedErrors);
     }
 
-    return apiResponse(res, 500, "خطأ في الخادم", error.message || error);
+    return next(error);
   }
 };
 
