@@ -1,6 +1,11 @@
 const { z } = require("zod");
-const customUnique = require("../../utils/zodCustomUnique");
+const {
+  customUnique,
+  imageUploadValidator,
+} = require("../../utils/zodCustoms");
 const usersModel = require("../models/users.model");
+const { formatedTypes } = require("../../utils/global");
+require("dotenv").config();
 
 // Login
 exports.loginValidate = () =>
@@ -47,7 +52,19 @@ exports.registerValidate = () =>
         /[^a-zA-Z0-9]/,
         "كلمة المرور يجب أن تحتوي على رمز خاص واحد على الأقل"
       ),
+
+    avatar: imageUploadValidator({
+      maxFiles: 1,
+      maxSize: process.env.MAX_IMAGE_SIZE,
+      types: process.env.ACCEPTED_IMAGE_TYPES,
+      messages: {
+        type: `أنواع الصور المسموح بها: ${formatedTypes(
+          process.env.ACCEPTED_IMAGE_TYPES
+        )} فقط`,
+      },
+    }),
   });
+
 // Add
 exports.createUsersValidate = () =>
   z.object({
@@ -79,6 +96,15 @@ exports.createUsersValidate = () =>
         /[^a-zA-Z0-9]/,
         "كلمة المرور يجب أن تحتوي على رمز خاص واحد على الأقل"
       ),
+
+    avatar: imageUploadValidator({
+      types: process.env.ACCEPTED_IMAGE_TYPES,
+      messages: {
+        type: `أنواع الصور المسموح بها: ${formatedTypes(
+          process.env.ACCEPTED_IMAGE_TYPES
+        )} فقط`,
+      },
+    }),
 
     role: z
       .string({ required_error: "نوع المستخدم مطلوب" })
@@ -116,6 +142,15 @@ exports.updateUsersValidate = (userId) =>
         "كلمة المرور يجب أن تحتوي على رمز خاص واحد على الأقل"
       )
       .optional(),
+
+    avatar: imageUploadValidator({
+      types: process.env.ACCEPTED_IMAGE_TYPES,
+      messages: {
+        type: `أنواع الصور المسموح بها: ${formatedTypes(
+          process.env.ACCEPTED_IMAGE_TYPES
+        )} فقط`,
+      },
+    }),
 
     role: z.string().optional(),
   });

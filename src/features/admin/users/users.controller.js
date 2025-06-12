@@ -33,8 +33,8 @@ exports.addusers = async (req, res, next) => {
     req.body.password = await bcrypt.hash(password, 10);
 
     // Set Path Avatar
-    if (req.filePaths) {
-      req.body.avatar = req.filePaths;
+    if (req.filesPaths[0]) {
+      req.body.avatar = req.filesPaths[0];
     }
 
     // Create new user
@@ -65,8 +65,8 @@ exports.updateusers = async (req, res, next) => {
     }
 
     // Set Path Avatar
-    if (req.filePaths) {
-      req.body.avatar = req.filePaths;
+    if (req.filesPaths[0]) {
+      req.body.avatar = req.filesPaths[0];
     }
 
     //  Update user
@@ -79,7 +79,7 @@ exports.updateusers = async (req, res, next) => {
     }
 
     // Remove Old Avatar
-    if (req.filePaths && existingUser.avatar) {
+    if (req.filesPaths && existingUser.avatar) {
       await deleteFiles(existingUser.avatar);
     }
 

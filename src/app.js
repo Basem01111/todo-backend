@@ -42,8 +42,8 @@ app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 // Remove Files In Req if Error Status
 app.use((req, res, next) => {
   res.on("finish", () => {
-    if (res.statusCode >= 400 && req.filePaths) {
-      deleteFiles(req.filePaths);
+    if (res.statusCode >= 400 && req.filesPaths) {
+      deleteFiles(req.filesPaths);
     }
   });
   next();
@@ -65,8 +65,8 @@ app.use((err, req, res, next) => {
   const message = err.message || "Internal Server Error";
 
   // Remove Files In Req if Error Status
-  if (status >= 400 && req.filePaths) {
-    deleteFiles(req.filePaths);
+  if (status >= 400 && req.filesPaths) {
+    deleteFiles(req.filesPaths);
   }
 
   apiResponse(

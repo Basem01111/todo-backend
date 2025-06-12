@@ -19,7 +19,6 @@ require("dotenv").config();
 // Upload Avatar
 const uploadAvatar = createUploader({
   folder: "tasks",
-  types: process.env.ACCEPTED_FILE_TYPES.slice(","),
   maxSize: process.env.MAX_FILE_SIZE,
   fieldName: "files",
   maxCount: 4,

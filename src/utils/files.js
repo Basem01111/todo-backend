@@ -30,24 +30,42 @@ exports.moveFile = async (filename, newFolderPath, oldFile) => {
   }
 };
 
-exports.getPathFile =  (filename, folder) => {
+exports.getPathFiles =  (filename, folder) => {
       return path.join("uploads", folder, filename);
 }
 
 exports.deleteFiles = async (paths) => {
-  try {
-    if (typeof paths === "string") {
-      await fs.promises.unlink(paths);
-      console.log("🗑️ Done Deleted File:", paths);
-    } else {
-      await Promise.all(
-        paths.map(async (filePath) => {
-          await fs.promises.unlink(filePath);
-          console.log("🗑️ Done Deleted File:", filePath);
-        })
-      );
+  const deleteOne = async (filePath) => {
+    try {
+      await fs.promises.unlink(filePath);
+      console.log("🗑️ تم حذف:", filePath);
+    } catch (err) {
+      if (err.code !== "ENOENT") {
+        console.error("❌ خطأ أثناء الحذف:", filePath, err.message);
+      } else {
+        console.warn("⚠️ الملف غير موجود:", filePath);
+      }
     }
-  } catch (err) {
-    console.error("❌ Error deleting files:", err);
+  };
+
+  if (!paths) return;
+
+  if (typeof paths === "string") {
+    await deleteOne(paths);
+  } else if (Array.isArray(paths)) {
+    await Promise.all(paths.map(deleteOne));
   }
 };
+
+
+/**
+ * Converts all backslashes in a path to forward slashes.
+ * 
+ * This is useful for ensuring consistent path formatting,
+ * especially when working across different operating systems
+ * (e.g., Windows uses '\' while URLs and Linux use '/').
+ *
+ * @param {string} p - The original file path.
+ * @returns {string} - The normalized path using forward slashes.
+ */
+exports.normalizePath = (p) => p.replace(/\\/g, "/").replace(/\/{2,}/g, "/");

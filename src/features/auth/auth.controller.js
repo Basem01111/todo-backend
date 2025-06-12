@@ -22,15 +22,15 @@ exports.register = async (req, res, next) => {
     }
     
     // Set Path Avatar
-    if(req.filePaths) {
-      req.body.avatar = req.filePaths;
+    if(req.filesPaths[0]) {
+      req.body.avatar = req.filesPaths[0];
     }
     
     // Create new user
     const user = new usersModel(req.body);
     await user.save();
     
-    return apiResponse(res, 200, "تم التسجيل");
+    return apiResponse(res, 200, "تم التسجيل",user);
   } catch (error) {
     apiResponse(res, 500, error.message);
   }

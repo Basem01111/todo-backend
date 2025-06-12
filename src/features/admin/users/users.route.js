@@ -19,7 +19,7 @@ const createUploader = require("../../../shared/middlewares/upload.middleware.js
 // Upload Avatar
 const uploadAvatar = createUploader({
   folder: 'users',
-  types: process.env.ACCEPTED_IMAGE_TYPES.slice(','),
+  maxCount: 1,
   maxSize: process.env.MAX_IMAGE_SIZE,
   fieldName: 'avatar',
 });

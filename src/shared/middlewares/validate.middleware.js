@@ -18,6 +18,7 @@ const validateMiddleware = (schemaFactory) => async (req, res, next) => {
     
     const schema = schemaFactory(userIdFromReq);
 
+    if(req.files && req.files[0]) req.body[req.files[0].fieldname] = req.files;
     const data = await schema.parseAsync(req.body);
 
     const otherErrors = req.validateErrors || {};

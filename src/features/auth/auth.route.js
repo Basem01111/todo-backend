@@ -12,8 +12,8 @@ const {
 
 // Upload Avatar
 const uploadAvatar = createUploader({
-    folder: 'users',
-  types: process.env.ACCEPTED_IMAGE_TYPES.slice(','),
+  folder: 'users',
+  maxCount: 1,
   maxSize: process.env.MAX_IMAGE_SIZE,
   fieldName: 'avatar',
 });

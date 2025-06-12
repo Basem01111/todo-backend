@@ -1,4 +1,5 @@
 const apiResponse = require("../../../utils/apiResponse");
+const { deleteFiles, normalizePath } = require("../../../utils/files");
 const paginate = require("../../../utils/paginate");
 const tasksModel = require("./tasks.model");
 
@@ -23,8 +24,8 @@ exports.getTasks = async (req, res, next) => {
 exports.addTasks = async (req, res, next) => {
   try {
     // If files Add To Body
-    if (req.filePaths) {
-      req.body.files = req.filePaths;
+    if (req.filesPaths?.length) {
+      req.body.files = req.filesPaths;
     }
 
     // Add User Id To Body
@@ -44,22 +45,52 @@ exports.addTasks = async (req, res, next) => {
 exports.updateTasks = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const removeFiles = req.body.removeFiles || [];
 
-    // Set Path File
-    if (req.filePaths) {
-      req.body.files = req.filePaths;
-    }
-
-    const task = await tasksModel.findOneAndUpdate(
-      { _id: id, userId: req.userId },
-      req.body,
-      { new: true }
-    );
+    // Get Existing Task
+    const task = await tasksModel.findOne({ _id: id, userId: req.userId });
 
     if (!task)
       return apiResponse(res, 404, "التاسك غير موجود أو غير مصرح لك بتحديثه");
 
-    return apiResponse(res, 200, "تم التحديث", task);
+    // Start with current files
+    let updatedFiles = task.files || [];
+    console.log(updatedFiles[0])
+
+    // Remove selected files
+    if (Array.isArray(removeFiles) && removeFiles.length) {
+      // Delete from Server
+      if (updatedFiles && updatedFiles.length) await deleteFiles(removeFiles);
+console.log(updatedFiles[0])
+          console.log("++++++++++++++++++++++")
+          console.log(removeFiles[0])
+      removeFiles.forEach((filename) => {
+        // Remove from updatedFiles array
+        updatedFiles = updatedFiles.filter((f) => {
+          console.log(normalizePath(f) ," | ", normalizePath(filename))
+          return normalizePath(f) !== normalizePath(filename)
+        });
+      });
+    }
+
+    // Add New Files
+    if (req.filesPaths?.length) {
+      updatedFiles = [...updatedFiles, ...req.filesPaths];
+    }
+    const updateData = {
+      ...req.body,
+      files: updatedFiles,
+    };
+    delete updateData.removeFiles;
+
+    // Update the task
+    const updatedTask = await tasksModel.findOneAndUpdate(
+      { _id: id, userId: req.userId },
+      updateData,
+      { new: true }
+    );
+
+    return apiResponse(res, 200, "تم التحديث", updatedTask);
   } catch (error) {
     apiResponse(res, 500, error.message);
   }
