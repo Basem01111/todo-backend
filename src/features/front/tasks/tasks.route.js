@@ -21,7 +21,7 @@ const uploadAvatar = createUploader({
   folder: "tasks",
   maxSize: process.env.MAX_FILE_SIZE,
   fieldName: "files",
-  maxCount: 4,
+  maxCount: process.env.MAX_FILE_COUNT,
 });
 
 router

@@ -8,7 +8,7 @@ const { formatedTypes } = require("../../utils/global");
 require("dotenv").config();
 
 // Login
-exports.loginValidate = () =>
+exports.loginValidate = (req) =>
   z.object({
     email: z
       .string({ required_error: "البريد الإلكتروني مطلوب" })
@@ -22,7 +22,7 @@ exports.loginValidate = () =>
   });
 
 // Register
-exports.registerValidate = () =>
+exports.registerValidate = (req) =>
   z.object({
     name: z
       .string({ required_error: "الاسم مطلوب" })
@@ -66,7 +66,7 @@ exports.registerValidate = () =>
   });
 
 // Add
-exports.createUsersValidate = () =>
+exports.createUsersValidate = (req) =>
   z.object({
     name: z
       .string({ required_error: "الاسم مطلوب" })
@@ -112,7 +112,7 @@ exports.createUsersValidate = () =>
   });
 
 // Update
-exports.updateUsersValidate = (userId) =>
+exports.updateUsersValidate = (req) =>
   z.object({
     name: z.string().trim().min(1, "الأسم غير صحيح").optional(),
 
@@ -121,14 +121,14 @@ exports.updateUsersValidate = (userId) =>
       .trim()
       .toLowerCase()
       .email("البريد الإلكتروني غير صالح")
-      .superRefine(customUnique(usersModel, "هذا البريد مستخدم من قبل", userId))
+      .superRefine(customUnique(usersModel, "هذا البريد مستخدم من قبل", req.params.id))
       .optional(),
 
     phone: z
       .string()
       .trim()
       .min(1, "رقم الهاتف غير صحيح")
-      .superRefine(customUnique(usersModel, "هذا الرقم مستخدم من قبل", userId))
+      .superRefine(customUnique(usersModel, "هذا الرقم مستخدم من قبل", req.params.id))
       .optional(),
 
     password: z

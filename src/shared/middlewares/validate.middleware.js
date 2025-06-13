@@ -14,9 +14,7 @@ const mergeFieldErrors = (errorsA = {}, errorsB = {}) => {
 
 const validateMiddleware = (schemaFactory) => async (req, res, next) => {
   try {
-    const userIdFromReq = req.params.id || null;
-    
-    const schema = schemaFactory(userIdFromReq);
+    const schema = schemaFactory(req);
 
     if(req.files && req.files[0]) req.body[req.files[0].fieldname] = req.files;
     const data = await schema.parseAsync(req.body);

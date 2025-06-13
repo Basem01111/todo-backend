@@ -55,19 +55,14 @@ exports.updateTasks = async (req, res, next) => {
 
     // Start with current files
     let updatedFiles = task.files || [];
-    console.log(updatedFiles[0])
 
     // Remove selected files
     if (Array.isArray(removeFiles) && removeFiles.length) {
       // Delete from Server
       if (updatedFiles && updatedFiles.length) await deleteFiles(removeFiles);
-console.log(updatedFiles[0])
-          console.log("++++++++++++++++++++++")
-          console.log(removeFiles[0])
       removeFiles.forEach((filename) => {
         // Remove from updatedFiles array
         updatedFiles = updatedFiles.filter((f) => {
-          console.log(normalizePath(f) ," | ", normalizePath(filename))
           return normalizePath(f) !== normalizePath(filename)
         });
       });

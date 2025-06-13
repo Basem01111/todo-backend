@@ -65,7 +65,7 @@ exports.deleteFiles = async (paths) => {
  * especially when working across different operating systems
  * (e.g., Windows uses '\' while URLs and Linux use '/').
  *
- * @param {string} p - The original file path.
+ * @param {string} - The original file path.
  * @returns {string} - The normalized path using forward slashes.
  */
 exports.normalizePath = (p) => p.replace(/\\/g, "/").replace(/\/{2,}/g, "/");

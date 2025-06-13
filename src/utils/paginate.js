@@ -26,7 +26,6 @@ async function paginate({
     const baseUrl = req.protocol + "://" + req.get("host") + req.baseUrl + req.path;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    console.log(req.query)
     const maxButtons = parseInt(req.query.maxButtons) || 5;
 
     const skip = (page - 1) * limit;

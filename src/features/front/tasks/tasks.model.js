@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+require("dotenv").config();
 
 const tasksSchema = new mongoose.Schema({
   userId: {
@@ -24,9 +25,9 @@ const tasksSchema = new mongoose.Schema({
     type: [String],
     validate: {
       validator: function (value) {
-        return value.length <= 4;
+        return value.length <= process.env.MAX_FILE_COUNT;
       },
-      message: "Max Files 4",
+      message: `Max Files ${process.env.MAX_FILE_COUNT}`,
     },
   },
 });
