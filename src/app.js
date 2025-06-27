@@ -2,6 +2,7 @@ var express = require("express");
 var app = express();
 const path = require("path");
 var createError = require("http-errors");
+const i18n = require('i18n');
 var logger = require("morgan");
 const cors = require("cors");
 var cookieParser = require("cookie-parser");
@@ -13,6 +14,18 @@ const { deleteFiles } = require("./utils/files");
 var authRouter = require("./routes/auth");
 var frontRouter = require("./routes/front");
 var adminRouter = require("./routes/admin");
+
+// Configure i18n
+i18n.configure({
+  locales: ['en', 'ar'],
+  directory: path.join(__dirname, 'locales'),
+  defaultLocale: 'en',
+  queryParameter: 'lang',
+  cookie: 'locale',
+  autoReload: true,
+  updateFiles: false
+});
+app.use(i18n.init);
 
 // Use Logger
 app.use(logger("dev"));
@@ -37,7 +50,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // Folder Files
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+app.use("/uploads", express.static(path.posix.join(process.cwd(), "uploads")));
 
 // Remove Files In Req if Error Status
 app.use((req, res, next) => {

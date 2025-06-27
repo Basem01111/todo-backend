@@ -1,0 +1,12 @@
+{
+  "i18n-ally.localesPaths": [
+    "src/locales"
+  ],
+  "i18n-ally.keysInUse": [
+    "res.__"
+  ],
+  "i18n-ally.sourceLanguage": "en",
+  "i18n-ally.displayLanguage": "ar",
+  "i18n-ally.locale": "ar",
+  "i18n-ally.framework": "custom"
+}

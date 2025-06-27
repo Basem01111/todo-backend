@@ -18,7 +18,7 @@ exports.register = async (req, res, next) => {
     if(role) {
       req.body.role = role._id;
     } else {
-      return apiResponse(res, 404, "الصلاحيات المطلوبة غير مسجلة في قاعدة البيانات");
+      return apiResponse(res, 404, res.__("role_not_found"));
     }
     
     // Set Path Avatar
@@ -30,7 +30,7 @@ exports.register = async (req, res, next) => {
     const user = new usersModel(req.body);
     await user.save();
     
-    return apiResponse(res, 200, "تم التسجيل",user);
+    return apiResponse(res, 200, res.__("register_success"),user);
   } catch (error) {
     apiResponse(res, 500, error.message);
   }
@@ -43,15 +43,15 @@ exports.login = async (req, res, next) => {
     // Find user by email
     const user = await usersModel.findOne({ email });
     if (!user)
-      return apiResponse(res, 400, "البريد الالكتروني غير مسجل", {
-        email: ["البريد الالكتروني غير مسجل"],
+      return apiResponse(res, 400, res.__("email_not_found"), {
+        email: [res.__("email_not_found")],
       });
 
     // Match password
     const match = await bcrypt.compare(password, user.password);
     if (!match)
-      return apiResponse(res, 400, "كلمة المرور غير صحيحة", {
-        password: ["كلمة المرور غير صحيحة"],
+      return apiResponse(res, 400, res.__("invalid_password"), {
+        password: [res.__("invalid_password")],
       });
 
     // Create JWT access token
@@ -68,7 +68,7 @@ exports.login = async (req, res, next) => {
     });
 
     // Response
-    return apiResponse(res, 200, "تم تسجيل الدخول", { user, accessToken });
+    return apiResponse(res, 200, res.__("login_success"), { user, accessToken });
   } catch (error) {
     apiResponse(res, 500, error.message);
   }
@@ -79,7 +79,7 @@ exports.logout = async (req, res) => {
   try {
     const cookies = req.cookies;
     const refreshToken = cookies.refreshToken;
-    if (!refreshToken) return apiResponse(res, 204, "No Content");
+    if (!refreshToken) return apiResponse(res, 204, res.__("invalid_or_expired_token"));
 
     res.clearCookie("refreshToken", {
       httpOnly: true,
@@ -87,9 +87,9 @@ exports.logout = async (req, res) => {
       sameSite: "None",
     });
 
-    return apiResponse(res, 200, "تم تسجيل الخروج بنجاح");
+    return apiResponse(res, 200, res.__("logout_success"));
   } catch (err) {
-    return apiResponse(res, 500, "حدث خطأ أثناء تسجيل الخروج");
+    return apiResponse(res, 500,  res.__("logout_error"));
   }
 };
 
@@ -97,18 +97,18 @@ exports.logout = async (req, res) => {
 exports.refreshToken = async (req, res, next) => {
   try {
     const cookies = req.cookies;
-    if (!cookies?.refreshToken) return apiResponse(res, 401, "Unauthorized");
+    if (!cookies?.refreshToken) return apiResponse(res, 401, res.__("unauthorized"));
 
     const refreshToken = cookies.refreshToken;
 
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
     const user = await usersModel.findById(decoded.userInfo.id);
-    if (!user) return apiResponse(res, 401, "Unauthorized");
+    if (!user) return apiResponse(res, 401, res.__("unauthorized"));
 
     const accessToken = genrateAccessToken(user);
 
     return res.json({ user, accessToken });
   } catch (err) {
-    return apiResponse(res, 403, "Invalid or expired token");
+    return apiResponse(res, 403,  res.__("invalid_or_expired_token"));
   }
 };

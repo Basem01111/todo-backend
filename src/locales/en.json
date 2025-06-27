@@ -1,0 +1,18 @@
+{
+ "no_tasks_found": "No tasks found",
+  "tasks_fetched": "Tasks fetched successfully",
+  "task_added": "Task added",
+  "task_not_found_or_unauthorized_update": "Task not found or you're not authorized to update it",
+  "task_updated": "Task updated",
+  "task_not_found_or_unauthorized_delete": "Task not found or you're not authorized to delete it",
+  "task_deleted": "Task deleted",
+  "register_success": "Registered successfully",
+  "role_not_found": "The required role is not registered in the database",
+  "email_not_found": "Email is not registered",
+  "invalid_password": "Incorrect password",
+  "login_success": "Logged in successfully",
+  "logout_success": "Logged out successfully",
+  "logout_error": "An error occurred during logout",
+  "unauthorized": "Unauthorized",
+  "invalid_or_expired_token": "Invalid or expired token"
+}

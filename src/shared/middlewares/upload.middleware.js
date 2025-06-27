@@ -5,8 +5,8 @@ const crypto = require("crypto");
 const { mbToBytes } = require("../../utils/global");
 
 function createUploader({ folder, fieldName, maxSize = 5, maxCount = 1 }) {
-  const uploadPath = path.join(process.cwd(), "uploads", folder);
-  const projectUploadsPath = path.join("uploads", folder);
+  const uploadPath = path.posix.join(process.cwd(), "uploads", folder);
+  const projectUploadsPath = path.posix.join("uploads", folder);
 
   if (!fs.existsSync(uploadPath)) {
     fs.mkdirSync(uploadPath, { recursive: true });
@@ -17,7 +17,7 @@ function createUploader({ folder, fieldName, maxSize = 5, maxCount = 1 }) {
     filename: (req, file, cb) => {
       const timestamp = Date.now();
       const randomId = crypto.randomUUID();
-      const ext = path.extname(file.originalname);
+      const ext = path.posix.extname(file.originalname);
       cb(null, `${timestamp}_${randomId}${ext}`);
     },
   });
@@ -71,7 +71,7 @@ function createUploader({ folder, fieldName, maxSize = 5, maxCount = 1 }) {
         // Add saved paths
         if (files.length > 0) {
           req.filesPaths = files.map((file) =>
-            path.join(projectUploadsPath, file.filename)
+            path.posix.join(projectUploadsPath, file.filename)
           );
         }
       }

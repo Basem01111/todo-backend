@@ -1,6 +1,5 @@
 const { z } = require("zod");
 const { formatedTypes } = require("./global");
-const { normalizePath } = require("./files");
 
 /**
  * Returns a Zod schema to validate image uploads with flexible options
@@ -60,7 +59,7 @@ exports.imageUploadValidator = ({
           : [];
         const validRemoveCount = removeFiles.filter((f) =>
           task?.[fieldName]?.some(
-            (existingFile) => normalizePath(existingFile) === normalizePath(f)
+            (existingFile) => existingFile === f
           )
         ).length;
 
@@ -132,12 +131,9 @@ exports.validateValuesExistInDB = (model, fieldInDB, errorMsg, req) => {
       return;
     }
 
-    const allNormalized = document[fieldInDB].map((item) =>
-      normalizePath(item)
-    );
 
     const invalids = values.filter(
-      (val) => !allNormalized.includes(normalizePath(val))
+      (val) => !document[fieldInDB].includes(val)
     );
 
     if (invalids.length > 0) {

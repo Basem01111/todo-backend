@@ -1,0 +1,18 @@
+{
+ "no_tasks_found": "لا يوجد مهمات",
+  "tasks_fetched": "تم جلب المهمات",
+  "task_added": "تم الإضافة",
+  "task_not_found_or_unauthorized_update": "التاسك غير موجود أو غير مصرح لك بتحديثه",
+  "task_updated": "تم التحديث",
+  "task_not_found_or_unauthorized_delete": "التاسك غير موجود أو غير مصرح لك بحذفه",
+  "task_deleted": "تم الحذف",
+  "register_success": "تم التسجيل",
+  "role_not_found": "الصلاحيات المطلوبة غير مسجلة في قاعدة البيانات",
+  "email_not_found": "البريد الالكتروني غير مسجل",
+  "invalid_password": "كلمة المرور غير صحيحة",
+  "login_success": "تم تسجيل الدخول",
+  "logout_success": "تم تسجيل الخروج بنجاح",
+  "logout_error": "حدث خطأ أثناء تسجيل الخروج",
+  "unauthorized": "غير مصرح",
+  "invalid_or_expired_token": "رمز غير صالح أو منتهي"
+}

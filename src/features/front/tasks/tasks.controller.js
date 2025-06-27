@@ -1,5 +1,5 @@
 const apiResponse = require("../../../utils/apiResponse");
-const { deleteFiles, normalizePath } = require("../../../utils/files");
+const { deleteFiles } = require("../../../utils/files");
 const paginate = require("../../../utils/paginate");
 const tasksModel = require("./tasks.model");
 
@@ -12,9 +12,9 @@ exports.getTasks = async (req, res, next) => {
       filter: { userId: req.userId },
     });
 
-    if (!tasks.data.length) return apiResponse(res, 404, "لا يوجد مهمات");
+    if (!tasks.data.length) return apiResponse(res, 404, res.__('no_tasks_found'));
 
-    apiResponse(res, 200, "تم جلب المهمات", tasks.data, tasks.pagination);
+    apiResponse(res, 200, res.__('tasks_fetched'), tasks.data, tasks.pagination);
   } catch (error) {
     apiResponse(res, 500, error.message);
   }
@@ -35,7 +35,7 @@ exports.addTasks = async (req, res, next) => {
     const task = new tasksModel(req.body);
     await task.save();
 
-    return apiResponse(res, 200, "تم الاضافة", task);
+    return apiResponse(res, 200, res.__('task_added'), task);
   } catch (error) {
     apiResponse(res, 500, error.message);
   }
@@ -51,7 +51,7 @@ exports.updateTasks = async (req, res, next) => {
     const task = await tasksModel.findOne({ _id: id, userId: req.userId });
 
     if (!task)
-      return apiResponse(res, 404, "التاسك غير موجود أو غير مصرح لك بتحديثه");
+      return apiResponse(res, 404, res.__('task_not_found_or_unauthorized_update'));
 
     // Start with current files
     let updatedFiles = task.files || [];
@@ -63,7 +63,7 @@ exports.updateTasks = async (req, res, next) => {
       removeFiles.forEach((filename) => {
         // Remove from updatedFiles array
         updatedFiles = updatedFiles.filter((f) => {
-          return normalizePath(f) !== normalizePath(filename)
+          return f !== (filename)
         });
       });
     }
@@ -85,7 +85,7 @@ exports.updateTasks = async (req, res, next) => {
       { new: true }
     );
 
-    return apiResponse(res, 200, "تم التحديث", updatedTask);
+    return apiResponse(res, 200, res.__('task_updated'), updatedTask);
   } catch (error) {
     apiResponse(res, 500, error.message);
   }
@@ -102,9 +102,9 @@ exports.deleteTasks = async (req, res, next) => {
     });
 
     if (!task)
-      return apiResponse(res, 404, "التاسك غير موجود أو غير مصرح لك بحذفه");
+      return apiResponse(res, 404, res.__('task_not_found_or_unauthorized_delete'));
 
-    return apiResponse(res, 200, "تم الحذف");
+    return apiResponse(res, 200, res.__('task_deleted'));
   } catch (error) {
     apiResponse(res, 500, error.message);
   }
