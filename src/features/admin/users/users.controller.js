@@ -16,16 +16,17 @@ exports.getusers = async (req, res, next) => {
     // }]).sort({ createdAt: -1 });
     const users = await usersModel.find({}).sort({ createdAt: -1 });
 
-    if (!users.length) return apiResponse(res, 404, "لا يوجد مستخدمين");
+    if (!users.length) return apiResponse(res, 404, res.__("users_not_found"));
 
-    apiResponse(res, 200, "تم جلب المستخدمين", users);
+    apiResponse(res, 200, res.__("users_fetched"), users);
   } catch (error) {
     apiResponse(res, 500, error.message);
   }
 };
 
+
 // Add user
-exports.addusers = async (req, res, next) => {
+exports.addUser = async (req, res, next) => {
   try {
     const { email, phone, password } = req.body;
 
@@ -41,14 +42,14 @@ exports.addusers = async (req, res, next) => {
     const user = new usersModel(req.body);
     await user.save();
 
-    return apiResponse(res, 200, "تم الاضافة", user);
+    return apiResponse(res, 200, res.__("done_added"), user);
   } catch (error) {
     apiResponse(res, 500, error.message);
   }
 };
 
 // Update user
-exports.updateusers = async (req, res, next) => {
+exports.updateUsers = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { email, phone, password } = req.body;
@@ -56,7 +57,7 @@ exports.updateusers = async (req, res, next) => {
     // Get User
     const existingUser = await usersModel.findById(id);
     if (!existingUser) {
-      return apiResponse(res, 404, "المستخدم غير موجود");
+      return apiResponse(res, 404, res.__("user_not_found"));
     }
 
     // Hash password
@@ -75,7 +76,7 @@ exports.updateusers = async (req, res, next) => {
     });
 
     if (!user) {
-      return apiResponse(res, 404, "المستخدم غير موجود");
+      return apiResponse(res, 404, res.__("user_not_found"));
     }
 
     // Remove Old Avatar
@@ -83,19 +84,19 @@ exports.updateusers = async (req, res, next) => {
       await deleteFiles(existingUser.avatar);
     }
 
-    return apiResponse(res, 200, "تم التحديث", user);
+    return apiResponse(res, 200, res.__("done_updated"), user);
   } catch (error) {
     apiResponse(res, 500, error.message);
   }
 };
 
 // Delete user
-exports.deleteusers = async (req, res, next) => {
+exports.deleteUsers = async (req, res, next) => {
   try {
     const { id } = req.params;
 
     await usersModel.findByIdAndDelete(id);
-    return apiResponse(res, 200, "تم الحذف");
+    return apiResponse(res, 200, res.__("done_remove"));
   } catch (error) {
     apiResponse(res, 500, error.message);
   }

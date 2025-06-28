@@ -1,8 +1,5 @@
 const { z } = require("zod");
-const {
-  customUnique,
-  imageUploadValidator,
-} = require("../../utils/zodCustoms");
+const { customUnique, fileUploadValidator, customExistInDB } = require("../../utils/zodCustoms");
 const usersModel = require("../models/users.model");
 const { formatedTypes } = require("../../utils/global");
 require("dotenv").config();
@@ -11,12 +8,13 @@ require("dotenv").config();
 exports.loginValidate = (req) =>
   z.object({
     email: z
-      .string({ required_error: "البريد الإلكتروني مطلوب" })
+      .string({ required_error: req.__("email_required") })
       .trim()
       .toLowerCase()
-      .email("البريد الإلكتروني غير صالح"),
+      .email(req.__("email_invalid"))
+      .superRefine(customExistInDB(usersModel, req.__("email_not_found"))),
 
-    password: z.string({ required_error: "كلمة المرور مطلوبة" }),
+    password: z.string({ required_error: req.__("password_required") }),
 
     remember: z.boolean().optional(),
   });
@@ -25,42 +23,41 @@ exports.loginValidate = (req) =>
 exports.registerValidate = (req) =>
   z.object({
     name: z
-      .string({ required_error: "الاسم مطلوب" })
+      .string({ required_error: req.__("name_required") })
       .trim()
-      .min(1, "الاسم مطلوب"),
+      .min(1, req.__("name_required")),
 
     email: z
-      .string({ required_error: "البريد الإلكتروني مطلوب" })
+      .string({ required_error: req.__("email_required") })
       .trim()
       .toLowerCase()
-      .email("البريد الإلكتروني غير صالح")
-      .superRefine(customUnique(usersModel, "هذا البريد مستخدم من قبل")),
+      .email(req.__("email_invalid"))
+      .superRefine(customUnique(usersModel, req.__("email_taken"))),
 
     phone: z
-      .string({ required_error: "رقم الهاتف مطلوب" })
+      .string({ required_error: req.__("phone_required") })
       .trim()
-      .min(1, "رقم الهاتف مطلوب")
-      .superRefine(customUnique(usersModel, "هذا الرقم مستخدم من قبل")),
+      .min(1, req.__("phone_required"))
+      .superRefine(customUnique(usersModel, req.__("phone_taken"))),
 
     password: z
-      .string({ required_error: "كلمة المرور مطلوبة" })
-      .min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل")
-      .regex(/[a-z]/, "كلمة المرور يجب أن تحتوي على حرف صغير واحد على الأقل")
-      .regex(/[A-Z]/, "كلمة المرور يجب أن تحتوي على حرف كبير واحد على الأقل")
-      .regex(/[0-9]/, "كلمة المرور يجب أن تحتوي على رقم واحد على الأقل")
+      .string({ required_error: req.__("password_required") })
+      .min(6, req.__("password_min"))
+      .regex(/[a-z]/, req.__("password_lowercase"))
+      .regex(/[A-Z]/, req.__("password_uppercase"))
+      .regex(/[0-9]/, req.__("password_number"))
       .regex(
         /[^a-zA-Z0-9]/,
-        "كلمة المرور يجب أن تحتوي على رمز خاص واحد على الأقل"
+        req.__("password_special")
       ),
 
-    avatar: imageUploadValidator({
-      maxFiles: 1,
-      maxSize: process.env.MAX_IMAGE_SIZE,
+    avatar: fileUploadValidator({
+      req,
       types: process.env.ACCEPTED_IMAGE_TYPES,
       messages: {
-        type: `أنواع الصور المسموح بها: ${formatedTypes(
-          process.env.ACCEPTED_IMAGE_TYPES
-        )} فقط`,
+        type: req.__("invalid_type_images", {
+          types: formatedTypes(process.env.ACCEPTED_FILE_TYPES),
+        }),
       },
     }),
   });
@@ -69,86 +66,92 @@ exports.registerValidate = (req) =>
 exports.createUsersValidate = (req) =>
   z.object({
     name: z
-      .string({ required_error: "الاسم مطلوب" })
+      .string({ required_error: req.__("name_required") })
       .trim()
-      .min(1, "الاسم مطلوب"),
+      .min(1, req.__("name_required")),
 
     email: z
-      .string({ required_error: "البريد الإلكتروني مطلوب" })
+      .string({ required_error: req.__("email_required") })
       .trim()
       .toLowerCase()
-      .email("البريد الإلكتروني غير صالح")
-      .superRefine(customUnique(usersModel, "هذا البريد مستخدم من قبل")),
+      .email(req.__("email_invalid"))
+      .superRefine(customUnique(usersModel, req.__("email_taken"))),
 
     phone: z
-      .string({ required_error: "رقم الهاتف مطلوب" })
+      .string({ required_error: req.__("phone_required") })
       .trim()
-      .min(1, "رقم الهاتف مطلوب")
-      .superRefine(customUnique(usersModel, "هذا الرقم مستخدم من قبل")),
+      .min(1, req.__("phone_required"))
+      .superRefine(customUnique(usersModel, req.__("phone_taken"))),
 
     password: z
-      .string({ required_error: "كلمة المرور مطلوبة" })
-      .min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل")
-      .regex(/[a-z]/, "كلمة المرور يجب أن تحتوي على حرف صغير واحد على الأقل")
-      .regex(/[A-Z]/, "كلمة المرور يجب أن تحتوي على حرف كبير واحد على الأقل")
-      .regex(/[0-9]/, "كلمة المرور يجب أن تحتوي على رقم واحد على الأقل")
+      .string({ required_error: req.__("password_required") })
+      .min(6, req.__("password_min"))
+      .regex(/[a-z]/, req.__("password_lowercase"))
+      .regex(/[A-Z]/, req.__("password_uppercase"))
+      .regex(/[0-9]/, req.__("password_number"))
       .regex(
         /[^a-zA-Z0-9]/,
-        "كلمة المرور يجب أن تحتوي على رمز خاص واحد على الأقل"
+        req.__("password_special")
       ),
 
-    avatar: imageUploadValidator({
+    avatar: fileUploadValidator({
+      req,
       types: process.env.ACCEPTED_IMAGE_TYPES,
       messages: {
-        type: `أنواع الصور المسموح بها: ${formatedTypes(
-          process.env.ACCEPTED_IMAGE_TYPES
-        )} فقط`,
+        type: req.__("invalid_type_images", {
+          types: formatedTypes(process.env.ACCEPTED_FILE_TYPES),
+        }),
       },
     }),
 
     role: z
-      .string({ required_error: "نوع المستخدم مطلوب" })
-      .length(24, "دور المستخدم غير صحيح"),
+      .string({ required_error: req.__("role_required") })
+      .length(24, req.__("role_invalid")),
   });
 
 // Update
 exports.updateUsersValidate = (req) =>
   z.object({
-    name: z.string().trim().min(1, "الأسم غير صحيح").optional(),
+    name: z.string().trim().min(1, req.__("name_invalid")).optional(),
 
     email: z
       .string()
       .trim()
       .toLowerCase()
-      .email("البريد الإلكتروني غير صالح")
-      .superRefine(customUnique(usersModel, "هذا البريد مستخدم من قبل", req.params.id))
+      .email(req.__("email_invalid"))
+      .superRefine(
+        customUnique(usersModel, req.__("email_taken"), req.params.id)
+      )
       .optional(),
 
     phone: z
       .string()
       .trim()
-      .min(1, "رقم الهاتف غير صحيح")
-      .superRefine(customUnique(usersModel, "هذا الرقم مستخدم من قبل", req.params.id))
+      .min(1, req.__("phone_invalid"))
+      .superRefine(
+        customUnique(usersModel, req.__("phone_taken"), req.params.id)
+      )
       .optional(),
 
     password: z
       .string()
-      .min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل")
-      .regex(/[a-z]/, "كلمة المرور يجب أن تحتوي على حرف صغير واحد على الأقل")
-      .regex(/[A-Z]/, "كلمة المرور يجب أن تحتوي على حرف كبير واحد على الأقل")
-      .regex(/[0-9]/, "كلمة المرور يجب أن تحتوي على رقم واحد على الأقل")
+      .min(6, req.__("password_min"))
+      .regex(/[a-z]/, req.__("password_lowercase"))
+      .regex(/[A-Z]/, req.__("password_uppercase"))
+      .regex(/[0-9]/, req.__("password_number"))
       .regex(
         /[^a-zA-Z0-9]/,
-        "كلمة المرور يجب أن تحتوي على رمز خاص واحد على الأقل"
+        req.__("password_special")
       )
       .optional(),
 
-    avatar: imageUploadValidator({
+    avatar: fileUploadValidator({
+      req,
       types: process.env.ACCEPTED_IMAGE_TYPES,
       messages: {
-        type: `أنواع الصور المسموح بها: ${formatedTypes(
-          process.env.ACCEPTED_IMAGE_TYPES
-        )} فقط`,
+        type: req.__("invalid_type_images", {
+          types: formatedTypes(process.env.ACCEPTED_FILE_TYPES),
+        }),
       },
     }),
 

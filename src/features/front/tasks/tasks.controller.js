@@ -35,7 +35,7 @@ exports.addTasks = async (req, res, next) => {
     const task = new tasksModel(req.body);
     await task.save();
 
-    return apiResponse(res, 200, res.__('task_added'), task);
+    return apiResponse(res, 200, res.__('done_added'), task);
   } catch (error) {
     apiResponse(res, 500, error.message);
   }
@@ -85,7 +85,7 @@ exports.updateTasks = async (req, res, next) => {
       { new: true }
     );
 
-    return apiResponse(res, 200, res.__('task_updated'), updatedTask);
+    return apiResponse(res, 200, res.__('done_updated'), updatedTask);
   } catch (error) {
     apiResponse(res, 500, error.message);
   }
@@ -104,7 +104,7 @@ exports.deleteTasks = async (req, res, next) => {
     if (!task)
       return apiResponse(res, 404, res.__('task_not_found_or_unauthorized_delete'));
 
-    return apiResponse(res, 200, res.__('task_deleted'));
+    return apiResponse(res, 200, res.__('done_remove'));
   } catch (error) {
     apiResponse(res, 500, error.message);
   }

@@ -36,38 +36,32 @@ function createUploader({ folder, fieldName, maxSize = 5, maxCount = 1 }) {
       // Multer errors
       if (err) {
         if (err.code === "LIMIT_FILE_SIZE") {
-          req.validateErrors[fieldName].push(
-            `الحجم لا يمكن أن يكون أكبر من ${maxSize} ميجابايت`
-          );
+          req.validateErrors[fieldName].push(req.__("too_large", { maxSize }));
         } else if (err.code === "LIMIT_UNEXPECTED_FILE") {
-          req.validateErrors[fieldName].push(
-            `يسمح فقط برفع ${maxCount} ملف${maxCount > 1 ? "ات" : ""}`
-          );
+          req.validateErrors[fieldName].push(req.__("max_count", { maxCount }));
         } else {
           req.validateErrors[fieldName].push(err.message);
         }
       }
 
-      if(req.files && req.files[0]) {
+      if (req.files && req.files[0]) {
         // Get Files
         const files = req.files;
-  
+
         // Manual Size check (even if no multer error)
         for (const file of files) {
           if (file?.size > mbToBytes(maxSize)) {
             req.validateErrors[fieldName].push(
-              `الحجم لا يمكن أن يكون أكبر من ${maxSize} ميجابايت`
+              req.__("too_large", { maxSize })
             );
             break;
           }
         }
-  
+
         if (files.length > maxCount) {
-          req.validateErrors[fieldName].push(
-            `يسمح فقط برفع ${maxCount} ملف${maxCount > 1 ? "ات" : ""}`
-          );
+          req.validateErrors[fieldName].push(req.__("max_count", { maxCount }));
         }
-        
+
         // Add saved paths
         if (files.length > 0) {
           req.filesPaths = files.map((file) =>

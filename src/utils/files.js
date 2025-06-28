@@ -10,12 +10,12 @@ exports.deleteFiles = async (paths) => {
   const deleteOne = async (filePath) => {
     try {
       await fs.promises.unlink(filePath);
-      console.log("🗑️ تم حذف:", filePath);
+      console.log("🗑️ Delete File:", filePath);
     } catch (err) {
       if (err.code !== "ENOENT") {
-        console.error("❌ خطأ أثناء الحذف:", filePath, err.message);
+        console.error("❌ Error Deletet File:", filePath, err.message);
       } else {
-        console.warn("⚠️ الملف غير موجود:", filePath);
+        console.warn("⚠️ Undefind File:", filePath);
       }
     }
   };

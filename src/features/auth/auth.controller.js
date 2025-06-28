@@ -42,10 +42,10 @@ exports.login = async (req, res, next) => {
     
     // Find user by email
     const user = await usersModel.findOne({ email });
-    if (!user)
-      return apiResponse(res, 400, res.__("email_not_found"), {
-        email: [res.__("email_not_found")],
-      });
+    // if (!user)
+    //   return apiResponse(res, 400, res.__("email_not_found"), {
+    //     email: [res.__("email_not_found")],
+    //   });
 
     // Match password
     const match = await bcrypt.compare(password, user.password);

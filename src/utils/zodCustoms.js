@@ -2,19 +2,19 @@ const { z } = require("zod");
 const { formatedTypes } = require("./global");
 
 /**
- * Returns a Zod schema to validate image uploads with flexible options
+ * Returns a Zod schema to validate file uploads with flexible options
  *
  * @param {Object} options - Validation options.
  * @param {Object} [options.req=null] - Express request object, used to access user data and route params.
  * @param {Model} [options.model=null] - Mongoose model to fetch the existing record from the database.
- * @param {number} options.maxCount - Maximum number of images allowed after upload.
- * @param {boolean} [options.required=false] - Whether image upload is mandatory.
- * @param {string} options.types - Allowed image MIME types, comma-separated (e.g., "image/png,image/jpeg").
+ * @param {number} options.maxCount - Maximum number of files allowed after upload.
+ * @param {boolean} [options.required=false] - Whether file upload is mandatory.
+ * @param {string} options.types - Allowed file MIME types, comma-separated (e.g., "file/png,file/jpeg").
  * @param {Object} [options.messages={}] - Custom error messages.
- * @returns {ZodType} - A Zod schema for validating image uploads.
+ * @returns {ZodType} - A Zod schema for validating file uploads.
  */
-exports.imageUploadValidator = ({
-  req = null,
+exports.fileUploadValidator = ({
+  req,
   model = null,
   maxCount,
   required = false,
@@ -29,13 +29,12 @@ exports.imageUploadValidator = ({
     .refine((file) => {
       if (required) return file && file.length > 0;
       return true;
-    }, messages.required || "Image is required")
+    }, messages.required || req.__("required"))
 
     .refine(
       (file) =>
         file ? file.every((f) => typesArray.includes(f?.mimetype)) : true,
-      messages.type ||
-        `Only the following image types are allowed: ${formatedTypes(types)}`
+      messages.type || req.__("invalid_type",{ types: formatedTypes(types) })
     )
 
     .superRefine(async (file, ctx) => {
@@ -69,7 +68,7 @@ exports.imageUploadValidator = ({
         if (totalAfterUpload > maxCount) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: `يسمح فقط برفع ${maxCount} ملف${maxCount > 1 ? "ات" : ""}`,
+            message: req.__("max_count",{ maxCount }),
           });
         }
       }
@@ -90,7 +89,7 @@ exports.customUnique = (model, errorMsg, id) => {
     if (id) {
       query._id = { $ne: id };
     }
-    const exists = await model.findOne(query);
+    const exists = await model.findOne(query).lean();
     if (exists) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -99,6 +98,35 @@ exports.customUnique = (model, errorMsg, id) => {
     }
   };
 };
+
+/**
+ * Ensures that the provided values exist in the database.
+ *
+ * @param {MongooseModel} model - The Mongoose model to query.
+ * @param {string} errorMsg - The error message to return if any values are missing.
+ * @returns {(value: any, ctx: RefinementCtx) => Promise<void>} - A Zod superRefine function.
+ */
+exports.customExistInDB = (model, errorMsg) => {
+  return async (value, ctx) => {
+    const fieldName = ctx.path[0];
+
+    const values = Array.isArray(value) ? value : [value];
+
+    const found = await model.find({ [fieldName]: { $in: values } }).select(fieldName).lean();
+
+    const foundValues = found.map((doc) => doc[fieldName]);
+
+    const missing = values.filter((val) => !foundValues.includes(val));
+
+    if (missing.length > 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: errorMsg,
+      });
+    }
+  };
+};
+
 
 /**
  * Adds a Zod superRefine validation to check if given values (string or array)
@@ -126,7 +154,7 @@ exports.validateValuesExistInDB = (model, fieldInDB, errorMsg, req) => {
     if (!document || !Array.isArray(document[fieldInDB])) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Invalid document or field data",
+        message: req.__("invalid_document_or_field"),
       });
       return;
     }

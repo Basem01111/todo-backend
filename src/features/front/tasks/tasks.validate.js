@@ -1,44 +1,45 @@
 const { z } = require('zod');
-const { imageUploadValidator, validateValuesExistInDB } = require('../../../utils/zodCustoms');
+const { fileUploadValidator, validateValuesExistInDB } = require('../../../utils/zodCustoms');
 const { formatedTypes } = require('../../../utils/global');
 const tasksModel = require("./tasks.model");
 
 // Add
 exports.createTasksValidate = (req)=> z.object({
-  title: z.string({ required_error: "الرجاء إدخال عنوان المهمة" })
+  title: z.string({ required_error: req.__("task_title_required") })
     .trim()
-    .min(1, "الرجاء إدخال عنوان المهمة")
-    .max(100, "العنوان يجب أن يكون أقل من 100 حرف"),
+    .min(1, req.__("task_title_required"))
+    .max(100, req.__("task_title_max")),
     
-  description: z.string().trim().max(1000, "المهمة يجب أن تكون أقل من 1000 حرف").optional(),
+  description: z.string().trim().max(1000, req.__("task_description_max")).optional(),
   completed: z.boolean().optional(),
 
-  files: imageUploadValidator({
+  files: fileUploadValidator({
+        req,
         types: process.env.ACCEPTED_FILE_TYPES,
         messages: {
-          type: `أنواع الملفات المسموح بها: ${formatedTypes(
+          type: req.__("invalid_type",{ types: formatedTypes(
             process.env.ACCEPTED_FILE_TYPES
-          )} فقط`,
+          ) }),
         },
       }),
 });
 
 // Update
 exports.updateTasksValidate = (req)=> z.object({
-  title: z.string().trim().max(100, "العنوان يجب أن يكون أقل من 100 حرف").optional(),
-  description: z.string().trim().max(1000, "المهمة يجب أن تكون أقل من 1000 حرف").optional(),
+  title: z.string().trim().max(100, req.__("task_title_max")).optional(),
+  description: z.string().trim().max(1000, req.__("task_description_max")).optional(),
   completed: z.boolean().optional(),
-  removeFiles: z.array(z.string()).superRefine(validateValuesExistInDB(tasksModel, 'files',"تأكد ان الصور التي تريد حذفها صحيحة",req)).optional(),
+  removeFiles: z.array(z.string()).superRefine(validateValuesExistInDB(tasksModel, 'files',req.__("invalid_files_to_remove"),req)).optional(),
 
-    files: imageUploadValidator({
+    files: fileUploadValidator({
         req,
         model: tasksModel,
         maxCount: process.env.MAX_FILE_COUNT,
         types: process.env.ACCEPTED_FILE_TYPES,
         messages: {
-          type: `أنواع الملفات المسموح بها: ${formatedTypes(
+          type: req.__("invalid_type",{ types: formatedTypes(
             process.env.ACCEPTED_FILE_TYPES
-          )} فقط`,
+          ) }),
         },
       }),
 });

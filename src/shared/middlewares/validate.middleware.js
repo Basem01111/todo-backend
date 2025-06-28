@@ -1,5 +1,7 @@
+// Imports
 const apiResponse = require("../../utils/apiResponse");
 
+// Merge All Errors
 const mergeFieldErrors = (errorsA = {}, errorsB = {}) => {
   const merged = { ...errorsA };
   for (const key in errorsB) {
@@ -12,6 +14,7 @@ const mergeFieldErrors = (errorsA = {}, errorsB = {}) => {
   return merged;
 };
 
+// Validate
 const validateMiddleware = (schemaFactory) => async (req, res, next) => {
   try {
     const schema = schemaFactory(req);
@@ -22,7 +25,7 @@ const validateMiddleware = (schemaFactory) => async (req, res, next) => {
     const otherErrors = req.validateErrors || {};
 
     if (Object.keys(otherErrors).length > 0) {
-      return apiResponse(res, 400, "خطأ في البيانات المدخلة", otherErrors);
+      return apiResponse(res, 400, res.__("invalid_data"), otherErrors);
     }
 
     req.body = data;
@@ -36,7 +39,7 @@ const validateMiddleware = (schemaFactory) => async (req, res, next) => {
 
       const mergedErrors = mergeFieldErrors(otherErrors, zodErrors);
 
-      return apiResponse(res, 400, "خطأ في البيانات المدخلة", mergedErrors);
+      return apiResponse(res, 400, res.__("invalid_data"), mergedErrors);
     }
 
     return next(error);

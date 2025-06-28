@@ -5,9 +5,9 @@ var express = require("express");
 var router = express.Router();
 const {
   getusers,
-  addusers,
-  updateusers,
-  deleteusers,
+  addUser,
+  updateUsers,
+  deleteUsers,
 } = require("./users.controller.js");
 const {
   createUsersValidate,
@@ -26,9 +26,9 @@ const uploadAvatar = createUploader({
 
 router
   .get('/', getusers)
-  .post('/add', uploadAvatar, validateMiddleware(createUsersValidate), addusers)
-  .put('/update/:id', uploadAvatar, validateMiddleware(updateUsersValidate), updateusers)
-  .delete('/delete/:id', deleteusers);
+  .post('/add', uploadAvatar, validateMiddleware(createUsersValidate), addUser)
+  .put('/update/:id', uploadAvatar, validateMiddleware(updateUsersValidate), updateUsers)
+  .delete('/delete/:id', deleteUsers);
 
 // Export the router
 module.exports = router;
